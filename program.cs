@@ -1,23 +1,13 @@
 Console.WriteLine("Kız Tavlası oyununa hoş geldiniz...");
 
-const int totalDice = 15;
+const int totalStamp = 15;
 
 string processOne = "open";
 string processTwo = "open";
 
 var diceDefault = new Dictionary<int, int>() { { 6, 3 }, { 5, 3 }, { 4, 3 }, { 3, 2 }, { 2, 2 }, { 1, 2 } };
-#region DefaultValues
-var gamerOne = new Dictionary<int, int>();
-foreach (var kvp in diceDefault)
-{
-    gamerOne.Add(kvp.Key, kvp.Value);
-}
-var gamerTwo = new Dictionary<int, int>();
-foreach (var kvp in diceDefault)
-{
-    gamerTwo.Add(kvp.Key, kvp.Value);
-}
-#endregion
+var gamerOneDices = diceDefault.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+var gamerTwoDices = diceDefault.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
 var gamerOneLogs = new List<string>();
 var gamerTwoLogs = new List<string>();
@@ -59,16 +49,16 @@ void Process(string player, string process, int dice1, int dice2)
     Console.WriteLine($"Oyuncu-{player} {(process == "open" ? "açtı" : "topladı")}, zarlar:[{dice1},{dice2}]");
     if (player == "1")
     {
-        SetDice(gamerOne, dice1, process, dice1 == dice2);
+        SetDice(gamerOneDices, dice1, process, dice1 == dice2);
         if (dice1 != dice2)
         {
-            SetDice(gamerOne, dice2, process, false);
+            SetDice(gamerOneDices, dice2, process, false);
         }
-        var log = $"Zar:[{dice1},{dice2}] | {string.Join('-', gamerOne.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))}";
+        var log = $"Zar:[{dice1},{dice2}] {string.Join('-', gamerOneDices.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))}";
         gamerOneLogs.Add(log);
         Console.WriteLine(log);
         Console.WriteLine();
-        var complated = gamerOne.Select(kvp => kvp.Value).Sum() == (process == "open" ? 0 : totalDice);
+        var complated = gamerOneDices.Select(kvp => kvp.Value).Sum() == (process == "open" ? 0 : totalStamp);
         if (complated)
         {
             if (process == "open")
@@ -79,9 +69,10 @@ void Process(string player, string process, int dice1, int dice2)
             else
             {
                 Console.WriteLine($"Oyuncu-1 kazandı! ({gamerOneLogs.Count})");
-                foreach (var l in gamerOneLogs)
+                for (int i = 0; i < gamerOneLogs.Count; i++)
                 {
-                    Console.WriteLine(l);
+                    string? l = gamerOneLogs[i];
+                    Console.WriteLine($"[{i.ToString().PadLeft(2, '0')}] {l}");
                 }
                 Environment.Exit(0);
             }
@@ -89,16 +80,16 @@ void Process(string player, string process, int dice1, int dice2)
     }
     else if (player == "2")
     { 
-        SetDice(gamerTwo, dice1, process, dice1 == dice2);
+        SetDice(gamerTwoDices, dice1, process, dice1 == dice2);
         if (dice1 != dice2)
         {
-            SetDice(gamerTwo, dice2, process, false);
+            SetDice(gamerTwoDices, dice2, process, false);
         }
-        var log = $"Zar:[{dice1},{dice2}] | {string.Join('-', gamerTwo.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))}";
+        var log = $"Zar:[{dice1},{dice2}] {string.Join('-', gamerTwoDices.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))}";
         gamerTwoLogs.Add(log);
         Console.WriteLine(log);
         Console.WriteLine();
-        var complated = gamerTwo.Select(kvp => kvp.Value).Sum() == (process == "open" ? 0 : 15);
+        var complated = gamerTwoDices.Select(kvp => kvp.Value).Sum() == (process == "open" ? 0 : 15);
         if (complated)
         {
             if (process == "open")
@@ -109,9 +100,10 @@ void Process(string player, string process, int dice1, int dice2)
             else
             {
                 Console.WriteLine($"Oyuncu-2 kazandı! ({gamerTwoLogs.Count})");
-                foreach (var l in gamerTwoLogs)
+                for (int i = 0; i < gamerTwoLogs.Count; i++)
                 {
-                    Console.WriteLine(l);
+                    string? l = gamerTwoLogs[i];
+                    Console.WriteLine($"[{i.ToString().PadLeft(2, '0')}] {l}");
                 }
                 Environment.Exit(0);
             }
