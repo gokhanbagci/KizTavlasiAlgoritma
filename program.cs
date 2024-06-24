@@ -2,8 +2,8 @@ Console.WriteLine("Kız Tavlası oyununa hoş geldiniz...");
 
 const int totalStamp = 15;
 
-string processOne = "open";
-string processTwo = "open";
+ProcessType processOne = ProcessType.Open;
+ProcessType processTwo = ProcessType.Open;
 
 var diceDefault = new Dictionary<int, int>() { { 6, 3 }, { 5, 3 }, { 4, 3 }, { 3, 2 }, { 2, 2 }, { 1, 2 } };
 var gamerOneDices = diceDefault.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
@@ -44,27 +44,27 @@ int RollDice()
 {
     return Random.Shared.Next(1, 7);
 }
-void Process(string player, string process, int dice1, int dice2)
+void Process(string player, ProcessType processType, int dice1, int dice2)
 {
-    Console.WriteLine($"Oyuncu-{player} {(process == "open" ? "açtı" : "topladı")}, zarlar:[{dice1},{dice2}]");
+    Console.WriteLine($"Oyuncu-{player} {(processType == ProcessType.Open ? "açtı" : "topladı")}, zarlar:[{dice1},{dice2}]");
     if (player == "1")
     {
-        SetDice(gamerOneDices, dice1, process, dice1 == dice2);
+        SetDice(gamerOneDices, dice1, processType, dice1 == dice2);
         if (dice1 != dice2)
         {
-            SetDice(gamerOneDices, dice2, process, false);
+            SetDice(gamerOneDices, dice2, processType, false);
         }
-        var log = $"Zar:[{dice1},{dice2}] {string.Join('-', gamerOneDices.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))}";
+        var complated = gamerOneDices.Select(kvp => kvp.Value).Sum() == (processType == ProcessType.Open ? 0 : totalStamp);
+        var log = $"Zar:[{dice1},{dice2}] {string.Join('-', gamerOneDices.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))} - {complated}";
         gamerOneLogs.Add(log);
         Console.WriteLine(log);
         Console.WriteLine();
-        var complated = gamerOneDices.Select(kvp => kvp.Value).Sum() == (process == "open" ? 0 : totalStamp);
         if (complated)
         {
-            if (process == "open")
+            if (processType == ProcessType.Open)
             {
-                Console.WriteLine($"Oyuncu-{player} tüm zarları {(process == "open" ? "açtı" : "topladı")}.");
-                processOne = "remove";
+                Console.WriteLine($"Oyuncu-{player} tüm zarları {(processType == ProcessType.Open ? "açtı" : "topladı")}.");
+                processOne = ProcessType.Remove;
             }
             else
             {
@@ -79,23 +79,23 @@ void Process(string player, string process, int dice1, int dice2)
         }
     }
     else if (player == "2")
-    { 
-        SetDice(gamerTwoDices, dice1, process, dice1 == dice2);
+    {
+        SetDice(gamerTwoDices, dice1, processType, dice1 == dice2);
         if (dice1 != dice2)
         {
-            SetDice(gamerTwoDices, dice2, process, false);
+            SetDice(gamerTwoDices, dice2, processType, false);
         }
-        var log = $"Zar:[{dice1},{dice2}] {string.Join('-', gamerTwoDices.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))}";
+        var complated = gamerTwoDices.Select(kvp => kvp.Value).Sum() == (processType == ProcessType.Open ? 0 : 15);
+        var log = $"Zar:[{dice1},{dice2}] {string.Join('-', gamerTwoDices.Select(kvp => $"[{kvp.Key},{kvp.Value}]"))} - {complated}";
         gamerTwoLogs.Add(log);
         Console.WriteLine(log);
         Console.WriteLine();
-        var complated = gamerTwoDices.Select(kvp => kvp.Value).Sum() == (process == "open" ? 0 : 15);
         if (complated)
         {
-            if (process == "open")
+            if (processType == ProcessType.Open)
             {
-                Console.WriteLine($"Oyuncu-{player} tüm zarları {(process == "open" ? "açtı" : "topladı")}.");
-                processTwo = "remove";
+                Console.WriteLine($"Oyuncu-{player} tüm zarları {(processType == ProcessType.Open ? "açtı" : "topladı")}.");
+                processTwo = ProcessType.Remove;
             }
             else
             {
@@ -109,37 +109,42 @@ void Process(string player, string process, int dice1, int dice2)
             }
         }
     }
-
     nextPlayer = player == "1" ? "2" : "1";
 }
-void SetDice(Dictionary<int, int> dices, int dice, string process, bool equalsDice)
+void SetDice(Dictionary<int, int> dices, int dice, ProcessType processType, bool equalsDice)
 {
-    if (process == "open")
+    switch (processType)
     {
-        if (!equalsDice)
-        {
-            if (dices[dice] > 0)
+        case ProcessType.Open:
+            if (!equalsDice)
             {
-                dices[dice]--;
+                if (dices[dice] > 0)
+                {
+                    dices[dice] = dices[dice] - 1;
+                }
             }
-        }
-        else
-        {
-            dices[dice] = 0;
-        }
-    }
-    else if (process == "remove")
-    {
-        if (!equalsDice)
-        {
-            if (dices[dice] < diceDefault[dice])
+            else
             {
-                dices[dice]++;
+                dices[dice] = 0;
             }
-        }
-        else
-        {
-            dices[dice] = diceDefault[dice];
-        }
+            break;
+        case ProcessType.Remove:
+            if (!equalsDice)
+            {
+                if (dices[dice] < diceDefault[dice])
+                {
+                    dices[dice] = dices[dice] + 1;
+                }
+            }
+            else
+            {
+                dices[dice] = diceDefault[dice];
+            }
+            break;
     }
+}
+enum ProcessType
+{
+    Open,
+    Remove
 }
